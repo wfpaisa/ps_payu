@@ -7,4 +7,5 @@ procesa el pedido se retorna una respuesta al Prestashop), este módulo fue desa
 en: (Argentina, Brasil, Chile, Colombia, México, Panamá, Perú)
 
 ## Notas
-Es construido desde el módulo de ejemplo de pagos de prestashop: `http://doc.prestashop.com/display/PS17/Creating+a+PrestaShop+1.7+Payment+Module` -> `https://github.com/PrestaShop/paymentexample` 
+Se toma la base de ejemplo `https://github.com/PrestaShop/paymentexample` dada en la documentación de [Prestashop](`http://doc.prestashop.com/display/PS17/Creating+a+PrestaShop+1.7+Payment+Module`)  
+y se adapta las funcionalidades Webcheckout de PayU; Ejemplo de funcionamiento: `https://github.com/wfpaisa/payu-raw`
