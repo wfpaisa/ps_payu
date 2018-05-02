@@ -59,10 +59,7 @@ class Ps_PayU extends PaymentModule
         }
 
         $payment_options = [
-            $this->getOfflinePaymentOption(),
             $this->getExternalPaymentOption(),
-            $this->getEmbeddedPaymentOption(),
-            $this->getIframePaymentOption(),
         ];
 
         return $payment_options;
@@ -83,21 +80,11 @@ class Ps_PayU extends PaymentModule
         return false;
     }
 
-    public function getOfflinePaymentOption()
-    {
-        $offlineOption = new PaymentOption();
-        $offlineOption->setCallToActionText($this->l('Pay offline'))
-                      ->setAction($this->context->link->getModuleLink($this->name, 'validation', array(), true))
-                      ->setAdditionalInformation($this->context->smarty->fetch('module:ps_payu/views/templates/front/payment_infos.tpl'))
-                      ->setLogo(Media::getMediaPath(_PS_MODULE_DIR_.$this->name.'/payment.jpg'));
-
-        return $offlineOption;
-    }
-
     public function getExternalPaymentOption()
     {
+
         $externalOption = new PaymentOption();
-        $externalOption->setCallToActionText($this->l('Pay external'))
+        $externalOption->setCallToActionText($this->l('Pago en línea'))
                        ->setAction($this->context->link->getModuleLink($this->name, 'validation', array(), true))
                        ->setInputs([
                             'token' => [
@@ -107,51 +94,11 @@ class Ps_PayU extends PaymentModule
                             ],
                         ])
                        ->setAdditionalInformation($this->context->smarty->fetch('module:ps_payu/views/templates/front/payment_infos.tpl'))
-                       ->setLogo(Media::getMediaPath(_PS_MODULE_DIR_.$this->name.'/payment.jpg'));
+                       // ->setLogo(Media::getMediaPath(_PS_MODULE_DIR_.$this->name.'/payment.png'));
+                       ->setLogo();
 
         return $externalOption;
     }
 
-    public function getEmbeddedPaymentOption()
-    {
-        $embeddedOption = new PaymentOption();
-        $embeddedOption->setCallToActionText($this->l('Pay embedded'))
-                       ->setForm($this->generateForm())
-                       ->setAdditionalInformation($this->context->smarty->fetch('module:ps_payu/views/templates/front/payment_infos.tpl'))
-                       ->setLogo(Media::getMediaPath(_PS_MODULE_DIR_.$this->name.'/payment.jpg'));
 
-        return $embeddedOption;
-    }
-
-    public function getIframePaymentOption()
-    {
-        $iframeOption = new PaymentOption();
-        $iframeOption->setCallToActionText($this->l('Pay iframe'))
-                     ->setAction($this->context->link->getModuleLink($this->name, 'iframe', array(), true))
-                     ->setAdditionalInformation($this->context->smarty->fetch('module:ps_payu/views/templates/front/payment_infos.tpl'))
-                     ->setLogo(Media::getMediaPath(_PS_MODULE_DIR_.$this->name.'/payment.jpg'));
-
-        return $iframeOption;
-    }
-
-    protected function generateForm()
-    {
-        $months = [];
-        for ($i = 1; $i <= 12; $i++) {
-            $months[] = sprintf("%02d", $i);
-        }
-
-        $years = [];
-        for ($i = 0; $i <= 10; $i++) {
-            $years[] = date('Y', strtotime('+'.$i.' years'));
-        }
-
-        $this->context->smarty->assign([
-            'action' => $this->context->link->getModuleLink($this->name, 'validation', array(), true),
-            'months' => $months,
-            'years' => $years,
-        ]);
-
-        return $this->context->smarty->fetch('module:ps_payu/views/templates/front/payment_form.tpl');
-    }
 }
