@@ -29,7 +29,7 @@ class Ps_PayUValidationModuleFrontController extends ModuleFrontController
         ]);
 
         //$this->setTemplate('payment_return.tpl');
-        $this->setTemplate('module:ps_payu/views/templates/front/payment_return.tpl');
+        $this->setTemplate('module:ps_payu/views/templates/front/page_validation.tpl');
 
 
         // $customer = new Customer($cart->id_customer);
