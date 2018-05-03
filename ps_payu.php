@@ -32,8 +32,8 @@ class Ps_PayU extends PaymentModule
         $this->bootstrap = true;
         parent::__construct();
 
-        $this->displayName = $this->l('Payment PayU');
-        $this->description = $this->l('PayU latam');
+        $this->displayName = $this->l('PayU');
+        $this->description = $this->l('Payment Webcheckout with PayU Latam');
 
         if (!count(Currency::checkPaymentCurrencies($this->id))) {
             $this->warning = $this->l('No currency has been set for this module.');
@@ -42,7 +42,7 @@ class Ps_PayU extends PaymentModule
 
     public function install()
     {
-        if (!parent::install() || !$this->registerHook('paymentOptions') || !$this->registerHook('paymentReturn')) {
+        if (!parent::install() || !$this->registerHook('paymentOptions') || !$this->registerHook('paymentReturn') || !$this->registerHook('displayHeader')) {
             return false;
         }
         return true;
@@ -82,23 +82,38 @@ class Ps_PayU extends PaymentModule
 
     public function getExternalPaymentOption()
     {
+        
+        $this->context->smarty->assign(
+            array(
+                // 'ps_payu_module_name' => Configuration::get('MYMODULE_NAME'),
+                // 'ps_payu_img' => Media::getMediaPath(_PS_MODULE_DIR_.$this->name.'/img/cards.png'),
+                // 'ps_payu_link' => $this->context->link->getModuleLink('ps_payu', 'display'),
+                'ps_payu_register_order' => $this->context->link->getModuleLink($this->name, 'order_register', array(), true),
+
+            )
+        );
 
         $externalOption = new PaymentOption();
-        $externalOption->setCallToActionText($this->l('Pago en línea'))
-                       ->setAction($this->context->link->getModuleLink($this->name, 'validation', array(), true))
+        $externalOption->setCallToActionText($this->l('Online payment by credit card, debit card'))
                        ->setInputs([
-                            'token' => [
-                                'name' =>'token',
-                                'type' =>'hidden',
-                                'value' =>'12345689',
-                            ],
+                            // 'token' => ['name' =>'token','type' =>'hidden','value' =>'12345689',],
+                            'token' => ['name' =>'token','value' =>'12345689',],
+                            'token2' => ['name' =>'token','value' =>'12345689',],
+
                         ])
-                       ->setAdditionalInformation($this->context->smarty->fetch('module:ps_payu/views/templates/front/payment_infos.tpl'))
+                       ->setAction($this->context->link->getModuleLink($this->name, 'register_order', array(), true)) // Payu post
+                       ->setAdditionalInformation($this->context->smarty->fetch('module:ps_payu/views/templates/front/hook_payment_option_detail.tpl'))
                        // ->setLogo(Media::getMediaPath(_PS_MODULE_DIR_.$this->name.'/payment.png'));
                        ->setLogo();
 
         return $externalOption;
     }
 
-
+    public function hookdisplayHeader($params)
+    {
+        if ('order' === $this->context->controller->php_self) {
+            $this->context->controller->registerStylesheet('modules-ps_payu', 'modules/'.$this->name.'/css/payu.css', ['media' => 'all', 'priority' => 200]);
+            $this->context->controller->registerJavascript('modules-ps_payu', 'modules/'.$this->name.'/js/payu.js', ['position' => 'bottom', 'priority' => 200]);
+        }
+    }
 }
