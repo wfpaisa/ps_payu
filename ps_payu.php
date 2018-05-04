@@ -82,28 +82,12 @@ class Ps_PayU extends PaymentModule
 
     public function getExternalPaymentOption()
     {
-        
-        $this->context->smarty->assign(
-            array(
-                // 'ps_payu_module_name' => Configuration::get('MYMODULE_NAME'),
-                // 'ps_payu_img' => Media::getMediaPath(_PS_MODULE_DIR_.$this->name.'/img/cards.png'),
-                // 'ps_payu_link' => $this->context->link->getModuleLink('ps_payu', 'display'),
-                'ps_payu_register_order' => $this->context->link->getModuleLink($this->name, 'order_register', array(), true),
-
-            )
-        );
+    
 
         $externalOption = new PaymentOption();
         $externalOption->setCallToActionText($this->l('Online payment by credit card, debit card'))
-                       ->setInputs([
-                            // 'token' => ['name' =>'token','type' =>'hidden','value' =>'12345689',],
-                            'token' => ['name' =>'token','value' =>'12345689',],
-                            'token2' => ['name' =>'token','value' =>'12345689',],
-
-                        ])
-                       ->setAction($this->context->link->getModuleLink($this->name, 'register_order', array(), true)) // Payu post
+                       ->setAction($this->context->link->getModuleLink($this->name, 'validation', array(), true)) 
                        ->setAdditionalInformation($this->context->smarty->fetch('module:ps_payu/views/templates/front/hook_payment_option_detail.tpl'))
-                       // ->setLogo(Media::getMediaPath(_PS_MODULE_DIR_.$this->name.'/payment.png'));
                        ->setLogo();
 
         return $externalOption;
