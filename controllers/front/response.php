@@ -1,18 +1,11 @@
 <?php
-class Ps_PayUConfirmationModuleFrontController extends ModuleFrontController
+class Ps_PayUResponseModuleFrontController extends ModuleFrontController
 {
-
-    public function initContent()
-    {   
-        parent::initContent();
-    }
-
     /**
      * @see FrontController::postProcess()
      */
     public function postProcess()
     {
-
         $cart = $this->context->cart;
         if ($cart->id_customer == 0 || $cart->id_address_delivery == 0 || $cart->id_address_invoice == 0 || !$this->module->active) {
             Tools::redirect('index.php?controller=order&step=1');
@@ -28,16 +21,15 @@ class Ps_PayUConfirmationModuleFrontController extends ModuleFrontController
         }
 
         if (!$authorized) {
-            die($this->module->l('This payment method is not available.', 'confirmation'));
+            die($this->module->l('This payment method is not available.', 'response'));
         }
 
         $this->context->smarty->assign([
-            'payu_link' => $this->context->link->getModuleLink('ps_payu', 'confirmation'),
-            'payu_links' => "xxx",
+            'params' => $_REQUEST,
         ]);
 
         //$this->setTemplate('payment_return.tpl');
-        $this->setTemplate('module:ps_payu/views/templates/front/page_validation.tpl');
+        $this->setTemplate('module:ps_payu/views/templates/front/page_response.tpl');
 
 
         // $customer = new Customer($cart->id_customer);
@@ -54,6 +46,5 @@ class Ps_PayUConfirmationModuleFrontController extends ModuleFrontController
 
         // $this->module->validateOrder($cart->id, Configuration::get('PS_OS_BANKWIRE'), $total, $this->module->displayName, NULL, $mailVars, (int)$currency->id, false, $customer->secure_key);
         // Tools::redirect('index.php?controller=order-confirmation&id_cart='.$cart->id.'&id_module='.$this->module->id.'&id_order='.$this->module->currentOrder.'&key='.$customer->secure_key);
-
     }
 }

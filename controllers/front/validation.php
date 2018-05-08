@@ -32,26 +32,41 @@ class Ps_PayUValidationModuleFrontController extends ModuleFrontController
         $currency               = $this->context->currency;
         $currency_iso           = $currency->iso_code;
         $total                  = (float)$cart->getOrderTotal(true, Cart::BOTH);
-        $order_state_approved   = 23;
-        $order_state_rejected   = 23;
-        $order_state_pending    = 23;
+        $order_state_approved   = Configuration::get('PS_PAYU_PAYMENT_STATUS_APPROVED');
+        $order_state_rejected   = Configuration::get('PS_PAYU_PAYMENT_STATUS_REJECTED');
+        $order_state_pending    = Configuration::get('PS_PAYU_PAYMENT_STATUS_PENDING');
         $mailVars       = array(
-            '{bankwire_owner}' => Configuration::get('BANK_WIRE_OWNER'),
-            '{bankwire_details}' => nl2br(Configuration::get('BANK_WIRE_DETAILS')),
-            '{bankwire_address}' => nl2br(Configuration::get('BANK_WIRE_ADDRESS'))
+            // '{bankwire_owner}' => Configuration::get('BANK_WIRE_OWNER'),
+            // '{bankwire_details}' => nl2br(Configuration::get('BANK_WIRE_DETAILS')),
+            // '{bankwire_address}' => nl2br(Configuration::get('BANK_WIRE_ADDRESS'))
         );
 
-
-        $this->module->validateOrder($cart->id, $order_state_approved, $total, $this->module->displayName, NULL, $mailVars, (int)$currency->id, false, $customer->secure_key);
+        // Important this make the order reference
+        // 
+        // parameters validateOrder(
+        //     $id_cart,
+        //     $id_order_state,
+        //     $amount_paid,
+        //     $payment_method = 'Unknown',
+        //     $message = null,
+        //     $extra_vars = array(),
+        //     $currency_special = null,
+        //     $dont_touch_amount = false,
+        //     $secure_key = false,
+        //     Shop $shop = null
+        // )
+        // $this->module->validateOrder($cart->id, $order_state_approved, $total, $this->module->displayName, NULL, $mailVars, (int)$currency->id, false, $customer->secure_key);
 
         // PayU Data
+        $urlProduction          = 'https://checkout.payulatam.com/ppp-web-gateway-payu/';
+        $urlSandbox             = 'https://sandbox.checkout.payulatam.com/ppp-web-gateway-payu/'; // Sandbox
         $order                  = new Order($this->module->currentOrder); // $this->module->currentOrder is generate after validateOrder
         $order_reference        = ($order->reference ? $order->reference : 0);
-        $url                    = 'https://checkout.payulatam.com/ppp-web-gateway-payu/'; // Producción
-        // $url                 = 'https://sandbox.checkout.payulatam.com/ppp-web-gateway-payu/'; // Sandbox
-        $ApiKey                 = 'aK7zFVLdsKbDe9495WaNDMb3j2';
-        $merchantId             = '322164';
-        $accountId              = '427063';
+         
+        $ApiKey                 = Configuration::get('PS_PAYU_API_KEY');
+        $merchantId             = Configuration::get('PS_PAYU_MERCHANT_ID');
+        $accountId              = Configuration::get('PS_PAYU_ACCOUNT_ID');
+        $url                    = (Configuration::get('PS_PAYU_SAND_BOX') ?  $urlSandbox : $urlProduction);
         $firma                  = "$ApiKey~$merchantId~$order_reference~$total~$currency_iso";
         $firmaMd5               = md5($firma);
         
@@ -66,13 +81,14 @@ class Ps_PayUValidationModuleFrontController extends ModuleFrontController
             'tax'               => '0', // La tienda incluye el tax en el total
             'taxReturnBase'     => '0', // no aplica
             'currencyIso'       => $currency_iso,
-            'test'              => '0',
+            'test'              => Configuration::get('PS_PAYU_TEST_MODE'),
             'buyerEmail'        => $customer->email,
-            'responseUrl'       => 'https://x.tk/payu/respuesta.php',
-            'confirmationUrl'   => 'http://x.tk/payu/confirmacion.php',
+            'responseUrl'       => $this->context->link->getModuleLink( $this->module->name, 'response'),
+            'confirmationUrl'   => $this->context->link->getModuleLink( $this->module->name, 'confirmation'),
             'confirmacionEmail' => Configuration::get('PS_SHOP_EMAIL'),
             'firmaMd5'          => $firmaMd5,
-            'params'            => Configuration::get('PS_OS_BANKWIRE'),
+            'moduleDirUrl'      => Media::getMediaPath(_PS_MODULE_DIR_.$this->module->name.'/img/payu_logo.png'),
+            'params'            => '',
         ]);
 
         $this->setTemplate('module:ps_payu/views/templates/front/page_validation.tpl');
