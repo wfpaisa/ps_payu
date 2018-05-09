@@ -2,35 +2,29 @@
 
 {block name="content"}
 
-  	{if $params}
-	<pre>
-		{$params|@print_r}
-	</pre>
-	{/if}
-
-	<form id="payu" method="post" action="{$url}">
-	  <input name="merchantId"    	value="{$merchantId}" ><br>
-	  <input name="accountId"     	value="{$accountId}" ><br>
-	  <input name="description"   	value="{$description}" ><br>
-	  <input name="referenceCode" 	value="{$referenceCode}" ><br>
-	  <input name="amount"        	value="{$amount}" ><br>
-	  <input name="tax"           	value="{$tax}" ><br>
-	  <input name="taxReturnBase" 	value="{$taxReturnBase}" ><br>
-	  <input name="currency"      	value="{$currencyIso}" ><br>
-	  <input name="signature"     	value="{$firmaMd5}" ><br>
-	  <input name="test"          	value="{$test}" ><br>
-	  <input name="buyerEmail"    	value="{$buyerEmail}" ><br>
-	  <input name="responseUrl"    	value="{$responseUrl}" ><br>
-	  <input name="confirmationUrl" value="{$confirmationUrl}" ><br>
-	  <input name="lng"				value="es"><br>
-	  <input name="Submit" type="submit" value="Enviar" >
+	<form id="payu" method="post" action="{$url}" style="display:none;">
+	  <input name="merchantId"    	 type="hidden" value="{$merchantId}" ><br>
+	  <input name="accountId"     	 type="hidden" value="{$accountId}" ><br>
+	  <input name="description"   	 type="hidden" value="{$description}" ><br>
+	  <input name="referenceCode" 	 type="hidden" value="{$referenceCode}" ><br>
+	  <input name="amount"        	 type="hidden" value="{$amount}" ><br>
+	  <input name="tax"           	 type="hidden" value="{$tax}" ><br>
+	  <input name="taxReturnBase" 	 type="hidden" value="{$taxReturnBase}" ><br>
+	  <input name="currency"      	 type="hidden" value="{$currencyIso}" ><br>
+	  <input name="signature"     	 type="hidden" value="{$firmaMd5}" ><br>
+	  <input name="test"          	 type="hidden" value="{$test}" ><br>
+	  <input name="buyerEmail"    	 type="hidden" value="{$buyerEmail}" ><br>
+	  <input name="responseUrl"    	 type="hidden" value="{$responseUrl}" ><br>
+	  <input name="confirmationUrl"  type="hidden" value="{$confirmationUrl}" ><br>
+	  <input name="lng"				 type="hidden" value="es"><br>
+	  <input name="Submit" type="submit"  type="hidden" value="Enviar" >
 	</form>
 	<script>
-		// document.getElementById("payu").submit();
+		document.getElementById("payu").submit();
 	</script>
 
-	{* <img src="{$moduleDirUrl}" alt="PayU"> *}
-	<p style="text-align: center; ">
-		{l s="PayU load..." d='Modules.Ps_payu.shop'}
+	<p style="text-align: center; font-size: 20px; color:#a6c407; font-family: Arial; font-weight: 600; margin: 20px;">
+		{* <img src="{$moduleDirUrl}" alt="PayU"> *}
+		{l s="PayU..." d='Modules.Ps_payu.shop'}
 	</p>
 {/block}

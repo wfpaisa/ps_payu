@@ -1,50 +1,113 @@
 <?php
 class Ps_PayUResponseModuleFrontController extends ModuleFrontController
 {
-    /**
-     * @see FrontController::postProcess()
-     */
-    public function postProcess()
-    {
-        $cart = $this->context->cart;
-        if ($cart->id_customer == 0 || $cart->id_address_delivery == 0 || $cart->id_address_invoice == 0 || !$this->module->active) {
-            Tools::redirect('index.php?controller=order&step=1');
-        }
+	/**
+	 * @see FrontController::postProcess()
+	 */
+	public function postProcess()
+	{
+		$cart = $this->context->cart;
+		if ($cart->id_customer == 0 || $cart->id_address_delivery == 0 || $cart->id_address_invoice == 0 || !$this->module->active) {
+			Tools::redirect('index.php?controller=order&step=1');
+		}
 
-        // Check that this payment option is still available in case the customer changed his address just before the end of the checkout process
-        $authorized = false;
-        foreach (Module::getPaymentModules() as $module) {
-            if ($module['name'] == 'ps_payu') {
-                $authorized = true;
-                break;
-            }
-        }
+		// Check that this payment option is still available in case the customer changed his address just before the end of the checkout process
+		$authorized = false;
+		foreach (Module::getPaymentModules() as $module) {
+			if ($module['name'] == 'ps_payu') {
+				$authorized = true;
+				break;
+			}
+		}
 
-        if (!$authorized) {
-            die($this->module->l('This payment method is not available.', 'response'));
-        }
+		if (!$authorized) {
+			die($this->module->l('This payment method is not available.', 'response'));
+		}
 
-        $this->context->smarty->assign([
-            'params' => $_REQUEST,
-        ]);
+		$errors = array();
 
-        //$this->setTemplate('payment_return.tpl');
-        $this->setTemplate('module:ps_payu/views/templates/front/page_response.tpl');
+		if (
+			isset($_REQUEST['merchantId']) &&
+			isset($_REQUEST['referenceCode']) &&
+			isset($_REQUEST['TX_VALUE']) &&
+			isset($_REQUEST['currency']) &&
+			isset($_REQUEST['transactionState']) &&
+			isset($_REQUEST['signature']) &&
+			isset($_REQUEST['reference_pol']) &&
+			isset($_REQUEST['lapPaymentMethod']) &&
+			isset($_REQUEST['transactionId']) &&
+			$_REQUEST['transactionState'] != 104
+		){
+
+			$ApiKey              = Configuration::get('PS_PAYU_API_KEY');
+			$merchant_id         = $_REQUEST['merchantId'];
+			$referenceCode       = $_REQUEST['referenceCode'];
+			$TX_VALUE            = $_REQUEST['TX_VALUE'];
+			$New_value           = number_format($TX_VALUE, 1, '.', '');
+			$order_currency            = $_REQUEST['currency'];
+			$transactionState    = $_REQUEST['transactionState'];
+			$firma               = "$ApiKey~$merchant_id~$referenceCode~$New_value~$order_currency~$transactionState";
+			$firmaMd5            = strtoupper(md5($firma));
+			$signature           = strtoupper($_REQUEST['signature']);
+			$reference_pol       = $_REQUEST['reference_pol'];
+			$cus                 = (isset($_REQUEST['cus'])? $_REQUEST['cus']: '');
+			$extra1              = (isset($_REQUEST['description'])? $_REQUEST['description']: '');
+			$pseBank             = (isset($_REQUEST['pseBank'])? $_REQUEST['pseBank']: '');
+			$lapPaymentMethod    = $_REQUEST['lapPaymentMethod'];
+			$transactionId       = $_REQUEST['transactionId'];
+
+			switch ($transactionState) {
+				case 4:
+					$estadoTx = $this->module->l('Order approved', 'response');
+					break;
+				case 6:
+					$estadoTx = $this->module->l('Order rejected', 'response');
+					break;
+				case 7:
+					$estadoTx = $this->module->l('Order unresolved', 'response');
+					break;
+				default:
+					$estadoTx = (isset($_REQUEST['mensaje'])? $_REQUEST['mensaje']: '' );
+			}
+
+			if($signature != $firmaMd5){
+				$errors[] = $this->module->l('Error validating digital signature', 'response'); 
+			}
+		}else{
+			$errors[] = $this->module->l('Error validating digital signature', 'response'); 
+		}
 
 
-        // $customer = new Customer($cart->id_customer);
-        // if (!Validate::isLoadedObject($customer))
-        //     Tools::redirect('index.php?controller=order&step=1');
+		if(empty($errors)){
+			
+			$this->context->smarty->assign([
+				'valida'			=> 1,
+				'estadoTx'			=> $estadoTx,
+				'transactionId' 	=> $transactionId,
+				'reference_pol' 	=> $reference_pol,
+				'referenceCode' 	=> $referenceCode,
+				'cus'				=> $cus,
+				'pseBank'			=> $pseBank,
+				'total'				=> $New_value,
+				'order_currency'	=> $order_currency,
+				'extra1'			=> $extra1,
+				'lapPaymentMethod'	=> $lapPaymentMethod,
 
-        // $currency = $this->context->currency;
-        // $total = (float)$cart->getOrderTotal(true, Cart::BOTH);
-        // $mailVars = array(
-        //     '{bankwire_owner}' => Configuration::get('BANK_WIRE_OWNER'),
-        //     '{bankwire_details}' => nl2br(Configuration::get('BANK_WIRE_DETAILS')),
-        //     '{bankwire_address}' => nl2br(Configuration::get('BANK_WIRE_ADDRESS'))
-        // );
+			]);
 
-        // $this->module->validateOrder($cart->id, Configuration::get('PS_OS_BANKWIRE'), $total, $this->module->displayName, NULL, $mailVars, (int)$currency->id, false, $customer->secure_key);
-        // Tools::redirect('index.php?controller=order-confirmation&id_cart='.$cart->id.'&id_module='.$this->module->id.'&id_order='.$this->module->currentOrder.'&key='.$customer->secure_key);
-    }
+			$this->setTemplate('module:ps_payu/views/templates/front/page_response.tpl');
+
+		}else{
+			
+			$this->context->smarty->assign([
+				'valida'		=> 0,
+				'errors'		=> $errors,
+				'referenceCode' => (isset($_REQUEST['referenceCode'])? $_REQUEST['referenceCode']: ''),
+			]);
+
+			$this->setTemplate('module:ps_payu/views/templates/front/page_response.tpl');
+		}
+
+		
+	}
 }

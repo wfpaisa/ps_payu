@@ -135,18 +135,6 @@ class Ps_PayU extends PaymentModule
 
         if (Tools::isSubmit('submit'.$this->name))
         {
-        //     $my_module_name = strval(Tools::getValue('PS_PAYU'));
-
-        //     if (!$my_module_name
-        //       || empty($my_module_name)
-        //       || !Validate::isGenericName($my_module_name))
-        //         $output .= $this->displayError($this->l('Invalid Configuration value'));
-        //     else
-        //     {
-        //         Configuration::updateValue('PS_PAYU', $my_module_name);
-        //         $output .= $this->displayConfirmation($this->l('Settings updated'));
-        //     }
-
 
             if (
                 !Configuration::updateValue('PS_PAYU_SAND_BOX', (int)Tools::getValue('PS_PAYU_SAND_BOX')) ||
@@ -256,7 +244,7 @@ class Ps_PayU extends PaymentModule
                         )
                     ),
                 ),
-                
+
                 array(
                     'type' => 'text',
                     'label' => $this->l('PS_PAYU_PAYMENT_STATUS_APPROVED'),

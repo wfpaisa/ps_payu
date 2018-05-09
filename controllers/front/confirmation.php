@@ -2,58 +2,89 @@
 class Ps_PayUConfirmationModuleFrontController extends ModuleFrontController
 {
 
-    public function initContent()
-    {   
-        parent::initContent();
-    }
+	public function initContent()
+	{   
+		parent::initContent();
+	}
 
-    /**
-     * @see FrontController::postProcess()
-     */
-    public function postProcess()
-    {
+	/**
+	 * @see FrontController::postProcess()
+	 */
+	public function postProcess()
+	{
 
-        $cart = $this->context->cart;
-        if ($cart->id_customer == 0 || $cart->id_address_delivery == 0 || $cart->id_address_invoice == 0 || !$this->module->active) {
-            Tools::redirect('index.php?controller=order&step=1');
-        }
+		// Check that this payment option is still available in case the customer changed his address just before the end of the checkout process
+		$authorized = false;
+		foreach (Module::getPaymentModules() as $module) {
+			if ($module['name'] == 'ps_payu') {
+				$authorized = true;
+				break;
+			}
+		}
 
-        // Check that this payment option is still available in case the customer changed his address just before the end of the checkout process
-        $authorized = false;
-        foreach (Module::getPaymentModules() as $module) {
-            if ($module['name'] == 'ps_payu') {
-                $authorized = true;
-                break;
-            }
-        }
-
-        if (!$authorized) {
-            die($this->module->l('This payment method is not available.', 'confirmation'));
-        }
-
-        $this->context->smarty->assign([
-            'payu_link' => $this->context->link->getModuleLink('ps_payu', 'confirmation'),
-            'payu_links' => "xxx",
-        ]);
-
-        //$this->setTemplate('payment_return.tpl');
-        $this->setTemplate('module:ps_payu/views/templates/front/page_validation.tpl');
+		if (!$authorized) {
+			die($this->module->l('This payment method is not available.', 'confirmation'));
+		}
 
 
-        // $customer = new Customer($cart->id_customer);
-        // if (!Validate::isLoadedObject($customer))
-        //     Tools::redirect('index.php?controller=order&step=1');
+		if (
+			isset($_REQUEST['reference_sale']) &&
+			isset($_REQUEST['value']) &&
+			isset($_REQUEST['currency']) &&
+			isset($_REQUEST['state_pol']) &&
+			isset($_REQUEST['sign']) 
+		){
 
-        // $currency = $this->context->currency;
-        // $total = (float)$cart->getOrderTotal(true, Cart::BOTH);
-        // $mailVars = array(
-        //     '{bankwire_owner}' => Configuration::get('BANK_WIRE_OWNER'),
-        //     '{bankwire_details}' => nl2br(Configuration::get('BANK_WIRE_DETAILS')),
-        //     '{bankwire_address}' => nl2br(Configuration::get('BANK_WIRE_ADDRESS'))
-        // );
+			$ApiKey 		= Configuration::get('PS_PAYU_API_KEY');
+			$merchantId 	= Configuration::get('PS_PAYU_MERCHANT_ID');
+			$referenceCode 	= Db::getInstance()->escape($_REQUEST['reference_sale'], false);
+			$txtValue 		= $_REQUEST['value'];
+			$newValue 		= number_format($txtValue, 1, '.', '');
+			$currency 		= $_REQUEST['currency'];
+			$statePol 		= $_REQUEST['state_pol'];
+			$sign 			= $_REQUEST['sign'];
+			$estadoTxt 		= Configuration::get('PS_PAYU_PAYMENT_STATUS_PENDING');
 
-        // $this->module->validateOrder($cart->id, Configuration::get('PS_OS_BANKWIRE'), $total, $this->module->displayName, NULL, $mailVars, (int)$currency->id, false, $customer->secure_key);
-        // Tools::redirect('index.php?controller=order-confirmation&id_cart='.$cart->id.'&id_module='.$this->module->id.'&id_order='.$this->module->currentOrder.'&key='.$customer->secure_key);
+			$firma = "$ApiKey~$merchantId~$referenceCode~$newValue~$currency~$statePol";
+			$firmaMd5 = md5($firma);
+			
+			if($firmaMd5 === $sign){
+				
+				switch ($statePol) {
+					case 4:
+						$estadoTxt = Configuration::get('PS_PAYU_PAYMENT_STATUS_APPROVED');
+						break;
+					case 6:
+						$estadoTxt = Configuration::get('PS_PAYU_PAYMENT_STATUS_REJECTED');
+						break;
+					case 7:
+						$estadoTxt = Configuration::get('PS_PAYU_PAYMENT_STATUS_PENDING');
+						break;
+					case 104:
+						$estadoTxt = 8;
+						break;
+					default:
+						$estadoTxt = Configuration::get('PS_PAYU_PAYMENT_STATUS_PENDING');
+				}
 
-    }
+
+			}
+
+
+			$sql = 'SELECT * FROM '._DB_PREFIX_.'orders  WHERE `reference` LIKE "'.$referenceCode.'"';
+			$orderId = Db::getInstance()->getValue($sql);
+
+			if($orderId != false){	
+				$history = new OrderHistory();
+				$history->id_order = (int)$orderId;
+				$history->changeIdOrderState( (int)$estadoTxt, (int)($orderId)); 
+				// $history->add(true); // No send email
+				$history->addWithemail(true); // Send email
+			}
+			
+		}
+
+		die("ok");
+
+	}
 }
