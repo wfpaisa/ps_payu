@@ -2,30 +2,8 @@
 class Ps_PayUConfirmationModuleFrontController extends ModuleFrontController
 {
 
-	public function initContent()
-	{   
-		parent::initContent();
-	}
-
-	/**
-	 * @see FrontController::postProcess()
-	 */
 	public function postProcess()
 	{
-
-		// Check that this payment option is still available in case the customer changed his address just before the end of the checkout process
-		$authorized = false;
-		foreach (Module::getPaymentModules() as $module) {
-			if ($module['name'] == 'ps_payu') {
-				$authorized = true;
-				break;
-			}
-		}
-
-		if (!$authorized) {
-			die($this->module->l('This payment method is not available.', 'confirmation'));
-		}
-
 
 		if (
 			isset($_REQUEST['reference_sale']) &&
@@ -74,7 +52,7 @@ class Ps_PayUConfirmationModuleFrontController extends ModuleFrontController
 			$sql = 'SELECT * FROM '._DB_PREFIX_.'orders  WHERE `reference` LIKE "'.$referenceCode.'"';
 			$orderId = Db::getInstance()->getValue($sql);
 
-			if($orderId != false){	
+			if($orderId != false){
 				$history = new OrderHistory();
 				$history->id_order = (int)$orderId;
 				$history->changeIdOrderState( (int)$estadoTxt, (int)($orderId)); 
@@ -84,7 +62,8 @@ class Ps_PayUConfirmationModuleFrontController extends ModuleFrontController
 			
 		}
 
-		die("ok");
+		
+		$this->setTemplate('module:ps_payu/views/templates/front/page_confirmation.tpl');
 
 	}
 }

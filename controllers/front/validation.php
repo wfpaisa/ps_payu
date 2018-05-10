@@ -44,6 +44,19 @@ class Ps_PayUValidationModuleFrontController extends ModuleFrontController
         );
 
         // Important this make the order reference
+        // 
+        // parameters validateOrder(
+        //     $id_cart,
+        //     $id_order_state,
+        //     $amount_paid,
+        //     $payment_method = 'Unknown',
+        //     $message = null,
+        //     $extra_vars = array(),
+        //     $currency_special = null,
+        //     $dont_touch_amount = false,
+        //     $secure_key = false,
+        //     Shop $shop = null
+        // )
         $this->module->validateOrder($cart->id, $order_state_pending, $total, $this->module->displayName, NULL, $mailVars, (int)$currency->id, false, $customer->secure_key);
 
         // PayU Data
