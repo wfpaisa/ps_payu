@@ -17,7 +17,7 @@ Las traducciones están el español Colombia (cb), las puedes cambiar al idioma 
 - `config_cb.xml.*` -> `config_es.xml`
 - `translations/cb.php` -> `translations/es.php`
 
-# Instalación
+## Instalación
 - Descargar el contenido de este [repositorio](https://github.com/wfpaisa/ps_payu/archive/master.zip) en un folder llamado `ps_payu` dentro de la carpeta de modulos.
 - En el administrador de Prestashop ir a la sección de módulos y buscar por "PayU" e instalar.
 - Entrar en las configuraciones del módulo e ingresar los datos solicitados.
