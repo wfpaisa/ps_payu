@@ -115,8 +115,8 @@ class Ps_PayU extends PaymentModule
         $externalOption->setCallToActionText($this->l('Online payment by credit card, debit card'))
                        ->setAction($this->context->link->getModuleLink($this->name, 'validation', array(), true)) 
                        ->setAdditionalInformation($this->context->smarty->fetch('module:ps_payu/views/templates/front/hook_payment_option_detail.tpl'))
-                       ->setLogo(Media::getMediaPath(_PS_MODULE_DIR_.$this->name.'/payment.png'));
-                       // ->setLogo();
+                       // ->setLogo(Media::getMediaPath(_PS_MODULE_DIR_.$this->name.'/payment.png'));
+                       ->setLogo();
 
         return $externalOption;
     }
