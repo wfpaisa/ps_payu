@@ -28,6 +28,6 @@ Las traducciones están el español Colombia (cb), las puedes cambiar al idioma 
 
 ## Pruebas de compras
 - En la configuración del módulo habilitar el modo Test en Si
-- Buscar generadores creditcards.
-- Para probar los estados de pago se puede realizar una compra y en el paso de la pasarela de pagos escoger ecredicard a la cual se le genero el código y en el campo del nombre de usuario ingresar: APPROVED, REJECTED, PENDING segun el caso a probar
+- Buscar generadores de códigos de creditcards.
+- Para probar los estados de pago se puede realizar una compra normal y en el paso de la pasarela de pagos escoger la credicard a la cual se le genero el código y en el campo del nombre de usuario ingresar: APPROVED, REJECTED, PENDING segun el caso.
  
