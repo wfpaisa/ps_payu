@@ -115,8 +115,8 @@ class Ps_PayU extends PaymentModule
         $externalOption->setCallToActionText($this->l('Online payment by credit card, debit card'))
                        ->setAction($this->context->link->getModuleLink($this->name, 'validation', array(), true)) 
                        ->setAdditionalInformation($this->context->smarty->fetch('module:ps_payu/views/templates/front/hook_payment_option_detail.tpl'))
-                       // ->setLogo(Media::getMediaPath(_PS_MODULE_DIR_.$this->name.'/payment.png'));
-                       ->setLogo();
+                       ->setLogo(Media::getMediaPath(_PS_MODULE_DIR_.$this->name.'/payment.png'));
+                       // ->setLogo();
 
         return $externalOption;
     }
@@ -269,6 +269,13 @@ class Ps_PayU extends PaymentModule
                     'desc' => $this->l('Only numbers - Order state Id - See(/index.php?controller=AdminStatuses)'),
                     'size' => 2,
                     'required' => true
+                ),
+
+                array(
+                    'type' => 'html',
+                    'name' => 'PS_PAYU_IMAGE',
+                    'label' => $this->l('Secure configuration'),
+                    'html_content' => '<img style="max-width:100%; border: 1px solid #eee; margin-bottom:15px;" src="'.Media::getMediaPath(_PS_MODULE_DIR_.$this->name.'/img/secscreenshot.png').'">'
                 ),
 
 

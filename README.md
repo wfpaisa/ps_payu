@@ -22,3 +22,12 @@ Las traducciones están el español Colombia (cb), las puedes cambiar al idioma 
 - En el administrador de Prestashop ir a la sección de módulos y buscar por "PayU" e instalar.
 - Entrar en las configuraciones del módulo e ingresar los datos solicitados.
 - Revisar si esta activo en el administrador/pago/preferencias/Restricciones por transportista  y activar en todos los transportistas
+- Ir a la configuración técnica de payu e ingresar los datos:
+	- URL de respuesta: https://midominio.com/module/ps_payu/response
+	- URL de confirmación: https://midominio.com/module/ps_payu/confirmation
+
+## Pruebas de compras
+- En la configuración del módulo habilitar el modo Test en Si
+- Buscar generadores creditcards.
+- Para probar los estados de pago se puede realizar una compra y en el paso de la pasarela de pagos escoger ecredicard a la cual se le genero el código y en el campo del nombre de usuario ingresar: APPROVED, REJECTED, PENDING segun el caso a probar
+ 
