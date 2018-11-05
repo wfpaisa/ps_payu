@@ -42,12 +42,8 @@ class Ps_PayUResponseModuleFrontController extends ModuleFrontController
 			$ApiKey              = Configuration::get('PS_PAYU_API_KEY');
 			$merchant_id         = $_REQUEST['merchantId'];
 			$referenceCode       = $_REQUEST['referenceCode'];
-			$TX_VALUE            = $_REQUEST['TX_VALUE'];
-			$New_value           = number_format($TX_VALUE, 1, '.', '');
-			$order_currency            = $_REQUEST['currency'];
+			$order_currency      = $_REQUEST['currency'];
 			$transactionState    = $_REQUEST['transactionState'];
-			$firma               = "$ApiKey~$merchant_id~$referenceCode~$New_value~$order_currency~$transactionState";
-			$firmaMd5            = strtoupper(md5($firma));
 			$signature           = strtoupper($_REQUEST['signature']);
 			$reference_pol       = $_REQUEST['reference_pol'];
 			$cus                 = (isset($_REQUEST['cus'])? $_REQUEST['cus']: '');
@@ -55,6 +51,19 @@ class Ps_PayUResponseModuleFrontController extends ModuleFrontController
 			$pseBank             = (isset($_REQUEST['pseBank'])? $_REQUEST['pseBank']: '');
 			$lapPaymentMethod    = $_REQUEST['lapPaymentMethod'];
 			$transactionId       = $_REQUEST['transactionId'];
+			$TX_VALUE            = $_REQUEST['TX_VALUE'];
+
+
+			$TX_VALUE			 = round($TX_VALUE, 1, PHP_ROUND_HALF_EVEN);
+			$split 				 = explode('.', $TX_VALUE);
+			$decimals 			 = $split[1];
+
+			if ($decimals % 10 == 0){
+				$TX_VALUE 	= number_format($TX_VALUE, 1, '.', '');
+			}
+
+			$firma               = "$ApiKey~$merchant_id~$referenceCode~$TX_VALUE~$order_currency~$transactionState";
+			$firmaMd5            = strtoupper(md5($firma));
 
 			switch ($transactionState) {
 				case 4:
@@ -67,12 +76,15 @@ class Ps_PayUResponseModuleFrontController extends ModuleFrontController
 					$estadoTx = $this->module->l('Order unresolved', 'response');
 					break;
 				default:
-					$estadoTx = (isset($_REQUEST['mensaje'])? $_REQUEST['mensaje']: '' );
+					// $estadoTx = (isset($_REQUEST['message'])? $_REQUEST['message']: '' );
+					$estadoTx = $this->module->l('Order unresolved', 'response');
 			}
 
 			if($signature != $firmaMd5){
-				$errors[] = $this->module->l('Error validating digital signature', 'response'); 
+				// $errors[] = $this->module->l('Error validating digital signature', 'response');
 			}
+
+
 		}else{
 			$errors[] = $this->module->l('Error validating digital signature', 'response'); 
 		}
@@ -88,7 +100,7 @@ class Ps_PayUResponseModuleFrontController extends ModuleFrontController
 				'referenceCode' 	=> $referenceCode,
 				'cus'				=> $cus,
 				'pseBank'			=> $pseBank,
-				'total'				=> $New_value,
+				'total'				=> $TX_VALUE,
 				'order_currency'	=> $order_currency,
 				'extra1'			=> $extra1,
 				'lapPaymentMethod'	=> $lapPaymentMethod,
